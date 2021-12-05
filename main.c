@@ -1,74 +1,50 @@
 #include "monty.h"
-
 /**
- * main - entry into interpreter
- * @argc: argc counter
- * @argv: arguments
- * Return: 0 on success
+ * main - entry point for Monty project
+ * @ac: number of arguments
+ * @av: array of pointers to those arguments
+ * Return: Always 0 on success
  */
-int main(int argc, char *argv[])
+int main(int ac, char **av)
 {
-	int fd, ispush = 0;
-	unsigned int line = 1;
-	ssize_t n_read;
-	char *buffer, *token;
-	stack_t *h = NULL;
+	unsigned int line_number; size_t line_len; FILE * fp;
+	char *line;
+	stack_t *list_head; int len;
 
-	if (argc != 2)
+	globals.retval = 0;
+	globals.mode = 0;
+	globals.command = NULL;
+	globals.push_val = NULL;
+	line = NULL; list_head = NULL; len = 0; line_number = 0; line_len = 0;
+	if (ac != 2)
 	{
 		printf("USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-	fd = open(argv[1], O_RDONLY);
-	if (fd == -1)
+	fp = fopen(av[1], "r");
+	if (fp == NULL)
 	{
-		printf("Error: Can't open file %s\n", argv[1]);
+		printf("Error: Can't open file %s\n", av[1]);
 		exit(EXIT_FAILURE);
 	}
-	buffer = malloc(sizeof(char) * 10000);
-	if (!buffer)
-		return (0);
-	n_read = read(fd, buffer, 10000);
-	if (n_read == -1)
+	while ((len = getline(&line, &line_len, fp)) != -1)
 	{
-		free(buffer);
-		close(fd);
+		line_number++;
+		if (!(line[0] == '\n') && !(line[0] == '#') && !is_empty(line))
+		{
+			tokenize(line); /* tokenize line */
+			if (globals.command[0] == '#')
+				continue;
+			globals.retval = find_opcode(&list_head, line_number);
+			if (globals.retval == -1)
+			{
+				break;
+			}
+		}
+	}
+	free(line); free_list(list_head); fclose(fp);
+	if (globals.retval == -1)
 		exit(EXIT_FAILURE);
-	}
-	token = strtok(buffer, "\n\t\a\r ;:");
-	while (token != NULL)
-	{
-		if (ispush == 1)
-		{
-			push(&h, line, token);
-			ispush = 0;
-			token = strtok(NULL, "\n\t\a\r ;:");
-			line++;
-			continue;
-		}
-		else if (strcmp(token, "push") == 0)
-		{
-			ispush = 1;
-			token = strtok(NULL, "\n\t\a\r ;:");
-			continue;
-		}
-		else
-		{
-			if (get_op_func(token) != 0)
-			{
-				get_op_func(token)(&h, line);
-			}
-			else
-			{
-				free_dlist(&h);
-				printf("L%d: unknown instruction %s\n", line, token);
-				exit(EXIT_FAILURE);
-			}
-		}
-		line++;
-		token = strtok(NULL, "\n\t\a\r ;:");
-	}
-	free_dlist(&h); free(buffer);
-	close(fd);
-	return (0);
+	else
+		exit(EXIT_SUCCESS);
 }

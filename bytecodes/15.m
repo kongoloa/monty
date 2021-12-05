@@ -1,6 +1,7 @@
 push 1
-push 20
 push 2
+push 3
+test
 pall
-swap
+add
 pall
