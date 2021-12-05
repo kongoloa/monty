@@ -1,30 +1,15 @@
-#ifndef _MONTY_H_
-#define _MONTY_H_
-
-#include <stdlib.h>
+#ifndef MONTY_H
+#define MONTY_H
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 
-/**
- * struct var_s - struct to contain the main variables of the Monty interpreter
- * @queue: flag to determine if in stack vs queue mode
- * @stack_len: length of the stack
- */
-typedef struct var_s
-{
-	int queue;
-	size_t stack_len;
-} var_t;
-
-#define STACK 0
-#define QUEUE 1
-
-/* global struct to hold flag for queue and stack length */
-extern var_t var;
+/* data structures */
 
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
@@ -56,28 +41,29 @@ typedef struct instruction_s
 	void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-void get_op(char *op, stack_t **stack, unsigned int line_number);
-void m_push(stack_t **stack, unsigned int line_number);
-void m_push2(stack_t **stack, int n);
-void m_pall(stack_t **stack, unsigned int line_number);
-void m_pint(stack_t **stack, unsigned int line_number);
-void m_pop(stack_t **stack, unsigned int line_number);
-void m_swap(stack_t **stack, unsigned int line_number);
-void m_add(stack_t **stack, unsigned int line_number);
-void m_nop(stack_t **stack, unsigned int line_number);
-void m_sub(stack_t **stack, unsigned int line_number);
-void m_mul(stack_t **stack, unsigned int line_number);
-void m_div(stack_t **stack, unsigned int line_number);
-void m_mod(stack_t **stack, unsigned int line_number);
-void rotl(stack_t **stack, unsigned int line_number);
-void rotr(stack_t **stack, unsigned int line_number);
-void m_stack(stack_t **stack, unsigned int line_number);
-void m_queue(stack_t **stack, unsigned int line_number);
-void m_pchar(stack_t **stack, unsigned int line_number);
-void m_pstr(stack_t **stack, unsigned int line_number);
-void free_stack(int status, void *arg);
-void m_fs_close(int status, void *arg);
-void free_lineptr(int status, void *arg);
-stack_t *add_node(stack_t **stack, const int n);
+/* opcodes related prototypes */
+void (*get_op_func(char *token1))(stack_t **stack, unsigned int line_number);
+void push(stack_t **h, unsigned int line_number, const char *n);
+void pop(stack_t **h, unsigned int line_number);
+void pint(stack_t **h, unsigned int line_number);
+void pall(stack_t **h, unsigned int line_number);
+void swap(stack_t **h, unsigned int line_number);
+void nop(stack_t **h, unsigned int line_number);
+void pchar(stack_t **h, unsigned int line_number);
+void pstr(stack_t **h, unsigned int line_number);
+void rotl(stack_t **h, unsigned int line_number);
+void rotr(stack_t **h, unsigned int line_number);
 
-#endif /* _MONTY_H_ */
+/* calculator prototypes */
+void _add(stack_t **h, unsigned int line_number);
+void _sub(stack_t **h, unsigned int line_number);
+void _mul(stack_t **h, unsigned int line_number);
+void _div(stack_t **h, unsigned int line_number);
+void _mod(stack_t **h, unsigned int line_number);
+
+/* doubly linked list related prototypes */
+int add_end_node(stack_t **h, int n);
+void delete_end_node(stack_t **h);
+void free_dlist(stack_t **h);
+
+#endif
